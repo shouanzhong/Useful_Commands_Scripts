@@ -15,3 +15,8 @@ adb shell pm disable com.google.android.setupwizard
 ```shell
 adb shell settings put global development_settings_enabled 1
 ```
+
+## 禁用 USB 安装验证
+```
+adb shell settings put global install_non_market_apps 1
+```
