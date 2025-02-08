@@ -7,10 +7,12 @@ goto :main
 :devices
 echo List of devices attached
 set i=1
-for /f "skip=1 tokens=1,*" %%a in ('adb devices -l') do (
+for /f "skip=1 tokens=1,4,* delims= " %%a in ('adb devices -l') do (
 	if "%%a" NEQ "" (
-		echo !i!    %%a %%b
+		echo !i!    %%a %%c %%b
 		set device[!i!]=%%a
+        set t=%%b
+        set models[!i!]=!t:model:=!
 		set /a i+=1
 	)
 )
@@ -23,6 +25,7 @@ echo     madb set ^<index^>
 echo     madb clear
 echo     madb -h ^| --help
 exit /b
+
 
 :quit_script
 echo Exiting...
@@ -62,9 +65,11 @@ if "%1" == "devices" (
         goto :eof
     )
 	call :devices
+    set selected_id=%2
     set selected_device=!device[%2]!
 
     :config_target
+    echo debug : selected_id : !selected_id!
     if "!selected_device!"=="" (
         echo Invalid device index.
         goto :eof
@@ -73,7 +78,8 @@ if "%1" == "devices" (
     echo;
     echo set !selected_device! as default
     REM echo ANDROID_SERIAL=!ANDROID_SERIAL!
-    title madb ^<--^> !selected_device!
+    call set model=%%models[!selected_id!]%%
+    title madb ^<--^> !selected_device! : !model!
     echo;
     
     echo Please enter a command to execute or type "[quit|exit]" to exit:
@@ -87,6 +93,7 @@ if "%1" == "devices" (
     goto :eof
 ) else if "%1" equ "" (
     call :devices
+    set selected_id=1
     set selected_device=!device[1]!
     goto :config_target
 ) else if "%1" equ "-h" (
